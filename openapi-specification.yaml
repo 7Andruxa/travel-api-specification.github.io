@@ -1,0 +1,468 @@
+openapi: 3.0.3
+
+info:
+    title: Travel-Shop-API
+    description: |
+        ## Travel Shop API Specification to ease your life
+        ### Goal
+        ### This Travel Items Shop API Documentation was created to give you guidelines how it works under the hood and how you can easily interact with it.
+        ### Shop URLs:
+        ###     [Front-End](https://travel-items.pp.ua)
+        ###     [Back-End](https://travel-items-api.pp.ua)
+    version: V1.0.0
+
+servers:
+    -   url: https://travel-items-api.pp.ua/{version}
+        description: Production Server
+        variables:
+            version:
+                default: v1
+    -   url: https://localhost:5000/{version}
+        description: Development Server
+        variables:
+            version:
+                default: v1
+
+paths:
+    /product-categories:
+        get:
+            tags:
+                - Categories
+            summary: Get all categories
+            description: |
+                Get all categories **without** attributes and products
+            responses:
+                '200':
+                    description: Get all categories
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/CollectionModelOfCategories"
+                            examples:
+                                collectionModelExample:
+                                    $ref: "#/components/examples/CollectionModelOfCategories"
+
+    /product-categories/{categoryId}:
+        get:
+            tags:
+                - Categories
+            summary: Get category by id
+            description: |
+                Get category details by id **with**  attributes and products
+            parameters:
+                -   in: path
+                    name: categoryId
+                    required: true
+                    schema:
+                        type: integer
+                        example: 1
+                -   in: query
+                    name: pageNumber
+                    schema:
+                        type: integer
+                        minimum: 1
+                        default: 1
+                -   in: query
+                    name: pageSize
+                    schema:
+                        type: integer
+                        minimum: 4
+                        maximum: 500
+                        default: 32
+                -   in: query
+                    name: sortProperty
+                    schema:
+                        type: string
+                        enum: [reviewsAmount, rating, price, name]
+                        default: reviewsAmount
+                -   in: query
+                    name: sortDirection
+                    schema:
+                        type: string
+                        enum: [asc, desc]
+                        default: desc
+                -   in: query
+                    name: filter
+                    description: |
+                        ## Filter by attribute options. 
+                        ***
+                        ### Filtering is performed using *optionId*.
+                        ### Options separated by ','
+                        ### Attributes separated by '-'
+                        ### Example: 
+                        ### Color(red,green)-Size(XXL)-Weight(2.5kg) = will look like: 12,13-48-78
+
+                    schema:
+                        type: string
+                    examples:
+                        single-attribute-single-option-filter:
+                            summary: Filter by ONE attribute and ONE option
+                            description: Attribute color with option red
+                            value: 12
+                        single-attribute-multiple-option-filter:
+                            summary: Filter by ONE attribute and MULTIPLE options of it
+                            description: Color(red,green,blue)
+                            value: 12,13,14
+                        multiple-attribute-single-option-filter:
+                            summary: Filter by MULTIPLE attributes with ONLY ONE option each
+                            description: Color(red)-Size(XXL)-Weight(2.5kg)
+                            value: 12-48-78
+                        multiple-attribute-multiple-option-filter:
+                            summary: Filter by MULTIPLE attributes with MULTIPLE options each
+                            description: Color(red,green)-Size(S,M,XXL)-Weight(2.5kg,3.5kg)
+                            value: 12,13-45,47,48-78,79
+            responses:
+                '200':
+                    description: Get category by id
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/CategoryDetails"
+                            examples:
+                                categoryDetailsExample:
+                                    $ref: "#/components/examples/CategoryDetails"
+                '404':
+                    description: Category not found exception
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Exception"
+                            examples:
+                                categoryNotFoundExceptionExample:
+                                    $ref: "#/components/examples/CategoryNotFoundException"
+
+
+components:
+    examples:
+        CollectionModelOfCategories:
+            summary: Collection model of categories example
+            value:
+                collectionModelExample:
+                    _embedded:
+                        categoryDTOList:
+                            -   id: 1
+                                parentCategoryId: null
+                                name: Намети
+                                image: намети.png
+                                subCategories: []
+                            -   id: 10
+                                parentCategoryId: null
+                                name: Одяг
+                                image: clothes.png
+                                subCategories:
+                                    -   id: 11
+                                        parentCategoryId: 10
+                                        name: Штани
+                                        image: штани.png
+                                        subCategories: []
+                                    -   id: 12
+                                        parentCategoryId: 10
+                                        name: Футболки
+                                        image: футболки.png
+                                        subCategories: []
+
+                    _links:
+                        self:
+                            href: https://travel-items-api.pp.ua/v1/product-categories
+                            title: Get all categories
+
+        CategoryDetails:
+            summary: Category details example
+            value:
+                categoryDetails:
+                    id: 1
+                    parentCategoryId: null
+                    name: Намети
+                    image: намети.png
+                    subCategories: []
+                    productItemsPage:
+                        page: 1
+                        size: 32
+                        totalElements: 154
+                        totalPages: 5
+                        content:
+                            -   id: 901
+                                mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-025-Peak-2-v2-green-001.jpg
+                                name: Намет Tramp UTRT-025 Peak 2 V2 (Green)
+                                quantityInStock: 10
+                                price: 7742
+                                variations:
+                                    -   id: 895
+                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/84/palatka-Tramp-Peak-2-TRT-23-new-00.jpg
+                                        name: Намет Tramp TRT-025 Peak 2 V2 (Grey/Red)
+                                        quantityInStock: 33
+                                        price: 6192
+                                    -   id: 901
+                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-025-Peak-2-v2-green-001.jpg
+                                        name: Намет Tramp UTRT-025 Peak 2 V2 (Green)
+                                        quantityInStock: 10
+                                        price: 7742
+                                    -   id: 907
+                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/78/palatka-Tramp-TRT-026-Peak-3-v2-00.jpg
+                                        name: Намет Tramp TRT-026 Peak 3 V2 (Grey/Red)
+                                        quantityInStock: 32
+                                        price: 6793
+                                    -   id: 909
+                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-026-Peak-3-v2-green-001.jpg
+                                        name: Намет Tramp UTRT-026 Peak 3 V2 (Green)
+                                        quantityInStock: 20
+                                        price: 8492
+                        lastPage: false
+                    attributes:
+                        -   id: 1
+                            productCategoryId: 1
+                            name: Кількість місць
+                            options:
+                                -   id: 1
+                                    attributeId: 1
+                                    name: 2
+                                -   id: 2
+                                    attributeId: 1
+                                    name: 3
+                                -   id: 3
+                                    attributeId: 1
+                                    name: 4
+                        -   id: 2
+                            productCategoryId: 1
+                            name: Водонепроникність
+                            options:
+                                -   id: 4
+                                    attributeId: 2
+                                    name: 3000
+                                -   id: 5
+                                    attributeId: 2
+                                    name: 4000
+                                -   id: 6
+                                    attributeId: 2
+                                    name: 5000
+                        -   id: 3
+                            productCategoryId: 1
+                            name: Вага
+                            options:
+                                -   id: 7
+                                    attributeId: 3
+                                    name: 2.5
+                                -   id: 8
+                                    attributeId: 3
+                                    name: 3.5
+                                -   id: 9
+                                    attributeId: 3
+                                    name: 4.5
+                        -   id: 4
+                            productCategoryId: 1
+                            name: Кількість входів
+                            options:
+                                -   id: 10
+                                    attributeId: 4
+                                    name: 1
+                                -   id: 11
+                                    attributeId: 4
+                                    name: 2
+                                -   id: 12
+                                    attributeId: 4
+                                    name: 3
+                    _links:
+                        self:
+                            href: https://travel-items-api.pp.ua/v1/product-categories/1
+                            title: Get this product category
+
+        CategoryNotFoundException:
+            summary: Category not found exception example
+            value:
+                categoryNotFoundException:
+                    type: https://travel-items-api.pp.ua/v1/product-categories/1
+                    title: Category not found
+                    status: 404
+                    detail: Category with id 1 not found
+                    instance: https://travel-items-api.pp.ua/v1/product-categories/1
+
+    schemas:
+        Links:
+            type: object
+            description: List of HATEOAS links
+            minProperties: 1
+            readOnly: true
+            properties:
+                link:
+                    type: object
+                    properties:
+                        href:
+                            type: string
+                        title:
+                            type: string
+
+        Exception:
+            type: object
+            properties:
+                type:
+                    type: string
+                    format: url
+                title:
+                    type: string
+                status:
+                    type: integer
+                detail:
+                    type: string
+                instance:
+                    type: string
+
+        CollectionModelOfCategories:
+            type: object
+            description: Category collection wrapper for HATEOAS implementation
+            readOnly: true
+            properties:
+                _embedded:
+                    $ref: "#/components/schemas/CategoriesList"
+                _links:
+                    $ref: "#/components/schemas/Links"
+
+        CategoriesList:
+            type: object
+            description: Category list
+            readOnly: true
+            properties:
+                categoryDTOList:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Category"
+
+        Category:
+            type: object
+            description: Category object
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                parentCategoryId:
+                    type: integer
+                    nullable: true
+                name:
+                    type: string
+                image:
+                    type: string
+                    format: url
+                subCategories:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Category"
+                    default: []
+
+        CategoryDetails:
+            type: object
+            description: Category details object
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                parentCategoryId:
+                    type: integer
+                    nullable: true
+                name:
+                    type: string
+                image:
+                    type: string
+                    format: url
+                subCategories:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Category"
+                    default: []
+                productItemsPage:
+                    $ref: "#/components/schemas/ProductItemsPage"
+                attributes:
+                    $ref: "#/components/schemas/CategoryAttributes"
+                _links:
+                    $ref: "#/components/schemas/Links"
+
+        ProductItemsPage:
+            type: object
+            description: Page of products and pagination info
+            readOnly: true
+            properties:
+                page:
+                    type: integer
+                size:
+                    type: integer
+                totalElements:
+                    type: integer
+                totalPages:
+                    type: integer
+                content:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/ProductItemDTOForCatalog"
+                    default: []
+                lastPage:
+                    type: boolean
+
+        ProductItemDTOForCatalog:
+            type: object
+            description: Product item DTO with only necessary fields for catalog
+            readOnly: true
+            allOf:
+                -  $ref: "#/components/schemas/ProductItemDTOForVariation"
+            properties:
+                variations:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/ProductItemDTOForVariation"
+                    default: []
+
+        ProductItemDTOForVariation:
+            type: object
+            description: Product item DTO with only necessary fields for variation
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                mainPhoto:
+                    type: string
+                    format: url
+                name:
+                    type: string
+                quantityInStock:
+                    type: integer
+                price:
+                    type: integer
+
+        CategoryAttributes:
+            type: array
+            description: List of category attributes
+            readOnly: true
+            items:
+                $ref: "#/components/schemas/Attribute"
+            default: []
+
+
+        Attribute:
+            type: object
+            description: Category attribute with available product options
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                productCategoryId:
+                    type: integer
+                name:
+                    type: string
+                options:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Option"
+                    default: []
+                _links:
+                    $ref: "#/components/schemas/Links"
+
+        Option:
+            type: object
+            description: Product option
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                attributeId:
+                    type: integer
+                name:
+                    type: string
+
+
