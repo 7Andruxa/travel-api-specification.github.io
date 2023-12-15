@@ -305,6 +305,8 @@ components:
                     type: string
                 instance:
                     type: string
+                    format: url
+
 
         CollectionModelOfCategories:
             type: object
