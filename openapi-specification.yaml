@@ -40,9 +40,14 @@ paths:
                             examples:
                                 collectionModelExample:
                                     $ref: "#/components/examples/CollectionModelOfCategories"
+                    links:
+                        GetCategoryDetailsById:
+                            $ref: "#/components/links/GetCategoryDetailsById"
+
 
     /product-categories/{categoryId}:
         get:
+            operationId: getCategoryDetails
             tags:
                 - Categories
             summary: Get category by id
@@ -70,6 +75,9 @@ paths:
                             examples:
                                 categoryDetailsExample:
                                     $ref: "#/components/examples/CategoryDetails"
+                    links:
+                        GetProductItemPageById:
+                            $ref: "#/components/links/GetProductItemPageById"
                 '404':
                     description: Category not found exception
                     content:
@@ -81,16 +89,17 @@ paths:
                                     $ref: "#/components/examples/CategoryNotFoundException"
 
 
-    /products/{productId}:
+    /products/{productItemId}:
         get:
+            operationId: getProductPage
             tags:
                 - Products
-            summary: Get product by id
+            summary: Get product page by id
             description: |
                 Get product details by id
             parameters:
                 -   in: path
-                    name: productId
+                    name: productItemId
                     required: true
                     schema:
                         type: integer
@@ -171,6 +180,23 @@ paths:
 
 
 components:
+    links:
+        GetCategoryDetailsById:
+            operationId: getCategoryDetails
+            description: |
+                * Using `id` of the category we can get details like attributes and products
+                * Use endpoint `GET /product-categories/{categoryId}` for this
+            parameters:
+                categoryId: $response.body._embedded.categoryDTOList.[*]#/id
+        GetProductItemPageById:
+            operationId: getProductPage
+            description: |
+                * Using `id` of the product item, we can get detailed information about it
+                * Use endpoint `GET /products/{productItemId}` for this
+            parameters:
+                productItemId: $response.body.productItemsPage.content.[*]#/id
+
+
     parameters:
         Filter:
             in: query
@@ -489,7 +515,7 @@ components:
                                     createdDate: 01 січня 2021
                                     isValid: true
                         -   id: 2
-                            customerName: Іванko227
+                            customerName: Іван227
                             questionBody: "Я люблю плавати ( example of invalid question that should not be exposed to the user)"
                             createdDate: 01 січня 2021
                             isValid: false
@@ -1048,6 +1074,8 @@ components:
                     $ref: "#/components/schemas/CreatedDate"
                 isValid:
                     $ref: "#/components/schemas/IsValid"
+
+
 
 
 
