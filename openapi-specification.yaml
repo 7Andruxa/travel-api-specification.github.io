@@ -3,10 +3,9 @@ openapi: 3.0.3
 info:
     title: Travel-Shop-API
     description: |
-        ## Travel Shop API Specification to ease your life
-        ### Goal
+        ## Goal
         ### This Travel Items Shop API Documentation was created to give you guidelines how it works under the hood and how you can easily interact with it.
-        ### Shop URLs:
+        ## Shop URLs:
         ###     [Front-End](https://travel-items.pp.ua)
         ###     [Back-End](https://travel-items-api.pp.ua)
     version: V1.0.0
@@ -56,61 +55,11 @@ paths:
                     schema:
                         type: integer
                         example: 1
-                -   in: query
-                    name: pageNumber
-                    schema:
-                        type: integer
-                        minimum: 1
-                        default: 1
-                -   in: query
-                    name: pageSize
-                    schema:
-                        type: integer
-                        minimum: 4
-                        maximum: 500
-                        default: 32
-                -   in: query
-                    name: sortProperty
-                    schema:
-                        type: string
-                        enum: [reviewsAmount, rating, price, name]
-                        default: reviewsAmount
-                -   in: query
-                    name: sortDirection
-                    schema:
-                        type: string
-                        enum: [asc, desc]
-                        default: desc
-                -   in: query
-                    name: filter
-                    description: |
-                        ## Filter by attribute options. 
-                        ***
-                        ### Filtering is performed using *optionId*.
-                        ### Options separated by ','
-                        ### Attributes separated by '-'
-                        ### Example: 
-                        ### Color(red,green)-Size(XXL)-Weight(2.5kg) = will look like: 12,13-48-78
-
-                    schema:
-                        type: string
-                    examples:
-                        single-attribute-single-option-filter:
-                            summary: Filter by ONE attribute and ONE option
-                            description: Attribute color with option red
-                            value: 12
-                        single-attribute-multiple-option-filter:
-                            summary: Filter by ONE attribute and MULTIPLE options of it
-                            description: Color(red,green,blue)
-                            value: 12,13,14
-                        multiple-attribute-single-option-filter:
-                            summary: Filter by MULTIPLE attributes with ONLY ONE option each
-                            description: Color(red)-Size(XXL)-Weight(2.5kg)
-                            value: 12-48-78
-                        multiple-attribute-multiple-option-filter:
-                            summary: Filter by MULTIPLE attributes with MULTIPLE options each
-                            description: Color(red,green)-Size(S,M,XXL)-Weight(2.5kg,3.5kg)
-                            value: 12,13-45,47,48-78,79
+                -   $ref: "#/components/parameters/PageNumber"
+                -   $ref: "#/components/parameters/PageSize"
+                -   $ref: "#/components/parameters/SortProperty"
+                -   $ref: "#/components/parameters/SortDirection"
+                -   $ref: "#/components/parameters/Filter"
             responses:
                 '200':
                     description: Get category by id
@@ -132,7 +81,162 @@ paths:
                                     $ref: "#/components/examples/CategoryNotFoundException"
 
 
+    /products/{productId}:
+        get:
+            tags:
+                - Products
+            summary: Get product by id
+            description: |
+                Get product details by id
+            parameters:
+                -   in: path
+                    name: productId
+                    required: true
+                    schema:
+                        type: integer
+                        example: 25
+            responses:
+                '200':
+                    description: Get product by id
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ProductItemDTOForPage"
+                            examples:
+                                productItemDTOExample:
+                                    $ref: "#/components/examples/ProductItemDTOForPage"
+                '404':
+                    description: Product not found exception
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Exception"
+                            examples:
+                                productItemNotFoundExceptionExample:
+                                    $ref: "#/components/examples/ProductItemNotFoundException"
+
+    /products/bestsellers:
+        get:
+            tags:
+                - Products
+            summary: Get bestsellers
+            description: |
+                Bestsellers, products with highest reviewsAmount 
+                in combination with average rating, sorted in desc
+            parameters:
+                -   $ref: "#/components/parameters/PageNumber"
+                -   $ref: "#/components/parameters/PageSize"
+            responses:
+                '200':
+                    description: Get bestsellers
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ProductItemsPage"
+                            examples:
+                                productItemsPageExample:
+                                    $ref: "#/components/examples/BestsellersPage"
+
+    /products/search:
+        get:
+            tags:
+                - Products
+            summary: Search products
+            description: |
+                Search will process name, description, sku and
+                compare them with a searchKey.
+                If searchKey is empty or 'no-key', it will return all products.
+            parameters:
+                -   in: query
+                    name: searchKey
+                    schema:
+                        type: string
+                        default: no-key
+                -   $ref: "#/components/parameters/PageNumber"
+                -   $ref: "#/components/parameters/PageSize"
+                -   $ref: "#/components/parameters/SortProperty"
+                -   $ref: "#/components/parameters/SortDirection"
+            responses:
+                '200':
+                    description: Search result page example
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ProductItemsPage"
+                            examples:
+                                productItemsPageExample:
+                                    $ref: "#/components/examples/SearchResultPageExample"
+
+
+
+
 components:
+    parameters:
+        Filter:
+            in: query
+            name: filter
+            description: |
+                ## Filter by attribute options. 
+                ***
+                ### Filtering is performed using *optionId*.
+                ### Options separated by ','
+                ### Attributes separated by '-'
+                ### Example: 
+                ### Color(red,green)-Size(XXL)-Weight(2.5kg) = will look like: 12,13-48-78
+            schema:
+                type: string
+            examples:
+                single-attribute-single-option-filter:
+                    summary: Filter by ONE attribute and ONE option
+                    description: Attribute color with option red
+                    value: 12
+                single-attribute-multiple-option-filter:
+                    summary: Filter by ONE attribute and MULTIPLE options of it
+                    description: Color(red,green,blue)
+                    value: 12,13,14
+                multiple-attribute-single-option-filter:
+                    summary: Filter by MULTIPLE attributes with ONLY ONE option each
+                    description: Color(red)-Size(XXL)-Weight(2.5kg)
+                    value: 12-48-78
+                multiple-attribute-multiple-option-filter:
+                    summary: Filter by MULTIPLE attributes with MULTIPLE options each
+                    description: Color(red,green)-Size(S,M,XXL)-Weight(2.5kg,3.5kg)
+                    value: 12,13-45,47,48-78,79
+
+        SortDirection:
+            in: query
+            name: sortDirection
+            schema:
+                type: string
+                enum: [asc, desc]
+                default: desc
+
+        SortProperty:
+            in: query
+            name: sortProperty
+            schema:
+                type: string
+                enum: [reviewsAmount, rating, price, name]
+                default: reviewsAmount
+
+        PageNumber:
+            in: query
+            name: pageNumber
+            schema:
+                type: integer
+                minimum: 1
+                default: 1
+
+        PageSize:
+            in: query
+            name: pageSize
+            schema:
+                type: integer
+                minimum: 4
+                maximum: 500
+                default: 32
+
+
     examples:
         CollectionModelOfCategories:
             summary: Collection model of categories example
@@ -270,11 +374,300 @@ components:
             summary: Category not found exception example
             value:
                 categoryNotFoundException:
-                    type: https://travel-items-api.pp.ua/v1/product-categories/1
+                    type: https://7andruxa.github.io/travel-api-specification.github.io/
                     title: Category not found
                     status: 404
                     detail: Category with id 1 not found
                     instance: https://travel-items-api.pp.ua/v1/product-categories/1
+
+
+        ProductItemDTOForPage:
+            summary: Product item DTO example
+            value:
+                productExample:
+                    id: 901
+                    categoryId: 1
+                    sku: 9511
+                    description: |
+                        Намет Tramp TRT-056 Scout 3 V2 — універсальний 3-місний намет для туристичних походів. 
+                        Класична форма. Просте та швидке встановлення. Найпопулярніша модель намету для походів.\n
+                        Особливості намету Tramp TRT-056 Scout 3 V2\nДвошарова конструкція купольного типу\n
+                        Каркас (дуги) — дюрапол — посилений склопластик, більш міцний за рахунок армування металевою сіткою, 
+                        та більш стійкий до УФ-променів за рахунок свого додаткового покриття.\nЗовнішній тент з посиленого поліестеру (RipStop) з PU-просоченням, 
+                        водостійкістю 6 000 мм H2O\nКріплення для дуги — в люверси\nСтінки внутрішнього намету з дихаючого поліестеру для покращеної 
+                        вентиляції\nПідлога внутрішнього намету з поліестеру, водостійкістю 8 000 мм H2O\nШви підлоги 
+                        та тенту проклеєні для захисту від протікання\nВнутрішній намет має 2 великих Q-подібних входи 
+                        на блискавці з 2-ма бігунками, дублюються москітними сітками\nКріплення для підвішування 
+                        світильника під стелею\nСітчаста поличка та кишеньки (під стелею та на бокових стінках) для 
+                        розміщення невеликого спорядження\nСітчасті вентиляційні вставки вгорі на внутрішньому наметі\n
+                        2 тамбури для розміщення спорядження чи взуття\n2 вентиляційні віконця у зовнішньому тенті зі 
+                        складними стійками-підпорами\nШтормові відтяжки зі світлоповертаючими елементами для фіксації 
+                        намету, добре помітні у світлі ліхтаря.\nАлюмінієві кілочки в комплекті\nЗручна сумка-чохол для 
+                        транспортування намету\n
+                    quantityInStock: 10
+                    price: 5292
+                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-001.jpg
+                    variations:
+                        -   id: 895
+                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/84/palatka-Tramp-Peak-2-TRT-23-new-00.jpg
+                            name: Намет Tramp TRT-025 Peak 2 V2 (Grey/Red)
+                            quantityInStock: 33
+                            price: 6192
+                        -   id: 901
+                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-025-Peak-2-v2-green-001.jpg
+                            name: Намет Tramp UTRT-025 Peak 2 V2 (Green)
+                            quantityInStock: 10
+                            price: 7742
+                        -   id: 907
+                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/78/palatka-Tramp-TRT-026-Peak-3-v2-00.jpg
+                            name: Намет Tramp TRT-026 Peak 3 V2 (Grey/Red)
+                            quantityInStock: 32
+                            price: 6793
+                        -   id: 909
+                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-026-Peak-3-v2-green-001.jpg
+                            name: Намет Tramp UTRT-026 Peak 3 V2 (Green)
+                            quantityInStock: 20
+                            price: 8492
+                    config:
+                        -   id: 11
+                            attribute: 2
+                            name: "Кількість місць: 2"
+                        -   id: 4
+                            attribute: 18
+                            name: "Водонепроникність: 3000"
+                        -   id: 28
+                            attribute: 30
+                            name: "Вага: 2.5"
+                        -   id: 1
+                            attribute: 2
+                            name: "Кількість входів: 1"
+                    itemPhotos:
+                        -   id: 127
+                            photo: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-001.jpg
+                        -   id: 128
+                            photo: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-002.jpg
+                        -   id: 129
+                            photo: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-003.jpg
+                    reviews:
+                        -   id: 1
+                            customerName: Андрій
+                            rating: 5
+                            advantages: "Якість, ціна, відповідає опису"
+                            disadvantages: "Немає"
+                            reviewBody: "Наметом задоволений. Якість відповідає опису. Ціна відповідна якості."
+                            createdDate: 01 січня 2021
+                            isValid: true
+                            photos:
+                                -   id: 1
+                                    photo: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-001.jpg
+                                -   id: 2
+                                    photo: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-002.jpg
+                            videos:
+                                -   id: 1
+                                    video: https://www.youtube.com/watch?v=1Qw8QsXv0qA
+                        -   id: 2
+                            customerName: Іван
+                            rating: 4
+                            reviewBody: "Дякую за швидку доставку."
+                            createdDate: 01 січня 2021
+                            isValid: true
+                            photos:
+                                -   id: 3
+                                    photo: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-003
+                    reviewsAmount: 2
+                    rating: 4.5
+                    questions:
+                        -   id: 1
+                            customerName: Андрій
+                            questionBody: "Чи є в наявності?"
+                            createdDate: 01 січня 2021
+                            isValid: true
+                            answers:
+                                -   id: 1
+                                    customerName: Менеджер
+                                    answerBody: "Так, є в наявності."
+                                    createdDate: 01 січня 2021
+                                    isValid: true
+                        -   id: 2
+                            customerName: Іванko227
+                            questionBody: "Я люблю плавати ( example of invalid question that should not be exposed to the user)"
+                            createdDate: 01 січня 2021
+                            isValid: false
+                            answers: []
+
+        ProductItemNotFoundException:
+            summary: Product item not found exception example
+            value:
+                productItemNotFoundExceptionExample:
+                    type: https://7andruxa.github.io/travel-api-specification.github.io/
+                    title: Product item not found
+                    status: 404
+                    detail: Product item with id 25 not found
+                    instance: https://travel-items-api.pp.ua/v1/product-categories/1
+
+        BestsellersPage:
+            summary: Bestsellers page example
+            value:
+                bestsellersPageExample:
+                    page: 1
+                    size: 5
+                    totalElements: 4007
+                    totalPages: 801
+                    isLastPage: false
+                    content:
+                        -   id: 1027
+                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001.jpg
+                            name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                            quantityInStock: 7
+                            price: 2497
+                            variations:
+                                -   id: 1025
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    quantityInStock: 16
+                                    price: 2497
+                                -   id: 1026
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001_knx0-91.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    quantityInStock: 20
+                                    price: 2497
+                                -   id: 1027
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    quantityInStock: 7
+                                    price: 2497
+                                -   id: 1028
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001_iemp-5p.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    quantityInStock: 12
+                                    price: 2497
+                        -   id: 1028
+                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001_iemp-5p.jpg
+                            name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                            quantityInStock: 12
+                            price: 2497
+                            variations:
+                                -   id: 1025
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    quantityInStock: 16
+                                    price: 2497
+                                -   id: 1026
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001_knx0-91.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    quantityInStock: 20
+                                    price: 2497
+                                -   id: 1027
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    quantityInStock: 7
+                                    price: 2497
+                                -   id: 1028
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001_iemp-5p.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    quantityInStock: 12
+                                    price: 2497
+                        -   id: 1026
+                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001_knx0-91.jpg
+                            name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                            quantityInStock: 20
+                            price: 2497
+                            variations:
+                                -   id: 1025
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    quantityInStock: 16
+                                    price: 2497
+                                -   id: 1026
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001_knx0-91.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    quantityInStock: 20
+                                    price: 2497
+                                -   id: 1027
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    quantityInStock: 7
+                                    price: 2497
+                                -   id: 1028
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001_iemp-5p.jpg
+                                    name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    quantityInStock: 12
+                                    price: 2497
+                        -   id: 901
+                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1114/675/detailed/78/palatka-pinguin-serac-01.jpg
+                            name: Намет Pinguin Serac (Green)
+                            quantityInStock: 48
+                            price: 5928
+                            variations:
+                                -   id: 901
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1114/675/detailed/78/palatka-pinguin-serac-01.jpg
+                                    name: Намет Pinguin Serac (Green)
+                                    quantityInStock: 48
+                                    price: 5928
+
+        SearchResultPageExample:
+            summary: Search result page example for key 'TRT-055 Scout 2 V2'
+            value:
+                searchResultPageExample:
+                    page: 1
+                    size: 32
+                    totalElements: 2
+                    totalPages: 1
+                    isLastPage: true
+                    content:
+                        -   id: 24
+                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-055-Scout-2-V2-001.jpg
+                            name: Намет Tramp TRT-055 Scout 2 V2 (Green/Yellow)
+                            quantityInStock: 0
+                            price: 4838
+                            variations:
+                                -   id: 24
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-055-Scout-2-V2-001.jpg
+                                    name: Намет Tramp TRT-055 Scout 2 V2 (Green/Yellow)
+                                    quantityInStock: 0
+                                    price: 4838
+                                -   id: 25
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-001.jpg
+                                    name: Намет Tramp TRT-056 Scout 3 V2 (Green/Yellow)
+                                    quantityInStock: 10
+                                    price: 5292
+                                -   id: 26
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1287/780/detailed/187/namet-Tramp-UTRT-055-Scout-2-20230630-00.jpg
+                                    name: Намет Tramp UTRT-055 Scout 2 V2 (Green)
+                                    quantityInStock: 20
+                                    price: 4838
+                                -   id: 27
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1287/780/detailed/187/namet-Tramp-UTRT-056-Scout-3-20230630-00.jpg
+                                    name: Намет Tramp UTRT-056 Scout 3 V2 (Green)
+                                    quantityInStock: 15
+                                    price: 5292
+                        -   id: 26
+                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1287/780/detailed/187/namet-Tramp-UTRT-055-Scout-2-20230630-00.jpg
+                            name: Намет Tramp UTRT-055 Scout 2 V2 (Green)
+                            quantityInStock: 20
+                            price: 4838
+                            variations:
+                                -   id: 24
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-055-Scout-2-V2-001.jpg
+                                    name: Намет Tramp TRT-055 Scout 2 V2 (Green/Yellow)
+                                    quantityInStock: 0
+                                    price: 4838
+                                -   id: 25
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-001.jpg
+                                    name: Намет Tramp TRT-056 Scout 3 V2 (Green/Yellow)
+                                    quantityInStock: 10
+                                    price: 5292
+                                -   id: 26
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1287/780/detailed/187/namet-Tramp-UTRT-055-Scout-2-20230630-00.jpg
+                                    name: Намет Tramp UTRT-055 Scout 2 V2 (Green)
+                                    quantityInStock: 20
+                                    price: 4838
+                                -   id: 27
+                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1287/780/detailed/187/namet-Tramp-UTRT-056-Scout-3-20230630-00.jpg
+                                    name: Намет Tramp UTRT-056 Scout 3 V2 (Green)
+                                    quantityInStock: 15
+                                    price: 5292
+
 
     schemas:
         Links:
@@ -306,6 +699,52 @@ components:
                 instance:
                     type: string
                     format: url
+
+
+        QuantityInStock:
+            type: integer
+            minimum: 0
+            maximum: 50
+
+        Photo:
+            type: object
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                photo:
+                    type: string
+                    format: url
+
+        Video:
+            type: object
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                video:
+                    type: string
+                    format: url
+
+        CreatedDate:
+            type: string
+            description: |
+                DateTime object formatted using pattern like 'dd MMMM uuuu'
+                and locale for Ukraine
+            format: dd MMMM uuuu
+
+        IsValid:
+            type: boolean
+            description: |
+                Review, question or answer should be validated 
+                by administrator. Otherwise it will not be shown 
+                to the user as it may contain inappropriate content.
+
+
+
+
+
+
 
 
         CollectionModelOfCategories:
@@ -389,20 +828,20 @@ components:
                     type: integer
                 totalPages:
                     type: integer
+                isLastPage:
+                    type: boolean
                 content:
                     type: array
                     items:
                         $ref: "#/components/schemas/ProductItemDTOForCatalog"
                     default: []
-                lastPage:
-                    type: boolean
 
         ProductItemDTOForCatalog:
             type: object
             description: Product item DTO with only necessary fields for catalog
             readOnly: true
             allOf:
-                -  $ref: "#/components/schemas/ProductItemDTOForVariation"
+                -   $ref: "#/components/schemas/ProductItemDTOForVariation"
             properties:
                 variations:
                     type: array
@@ -423,7 +862,7 @@ components:
                 name:
                     type: string
                 quantityInStock:
-                    type: integer
+                    $ref: "#/components/schemas/QuantityInStock"
                 price:
                     type: integer
 
@@ -434,7 +873,6 @@ components:
             items:
                 $ref: "#/components/schemas/Attribute"
             default: []
-
 
         Attribute:
             type: object
@@ -466,5 +904,150 @@ components:
                     type: integer
                 name:
                     type: string
+
+
+        ProductItemDTOForPage:
+            type: object
+            description: Product item DTO with all the available fields that it has
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                categoryId:
+                    type: integer
+                sku:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                    description: |
+                        Product item description has '/n' symbols. They indicate new line.
+                        You can use them to split description into paragraphs.
+                quantityInStock:
+                    $ref: "#/components/schemas/QuantityInStock"
+                price:
+                    type: integer
+                mainPhoto:
+                    type: string
+                    format: url
+                variations:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/ProductItemDTOForVariation"
+                    default: []
+                config:
+                    type: array
+                    description: List of 'attribute-option' pairs
+                    items:
+                        $ref: "#/components/schemas/AttributeOption"
+                    default: []
+                itemPhotos:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Photo"
+                    default: []
+                reviews:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Review"
+                    default: []
+                reviewsAmount:
+                    type: integer
+                rating:
+                    type: number
+                    format: float
+                questions:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Question"
+                    default: []
+
+        AttributeOption:
+            type: object
+            description: |
+                Concatenation of attribute and option like: "AttributeName: OptionValue"
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                attribute:
+                    type: integer
+                name:
+                    type: string
+
+        Review:
+            type: object
+            description: Product item review
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                customerName:
+                    type: string
+                rating:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                advantages:
+                    type: string
+                    nullable: true
+                disadvantages:
+                    type: string
+                    nullable: true
+                reviewBody:
+                    type: string
+                createdDate:
+                    $ref: "#/components/schemas/CreatedDate"
+                isValid:
+                    $ref: "#/components/schemas/IsValid"
+                photos:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Photo"
+                    default: []
+                videos:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Video"
+                    default: []
+
+        Question:
+            type: object
+            description: Product item question
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                customerName:
+                    type: string
+                questionBody:
+                    type: string
+                createdDate:
+                    $ref: "#/components/schemas/CreatedDate"
+                isValid:
+                    $ref: "#/components/schemas/IsValid"
+                answers:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Answer"
+                    default: []
+
+        Answer:
+            type: object
+            description: Answer to the question
+            readOnly: true
+            properties:
+                id:
+                    type: integer
+                customerName:
+                    type: string
+                answerBody:
+                    type: string
+                createdDate:
+                    $ref: "#/components/schemas/CreatedDate"
+                isValid:
+                    $ref: "#/components/schemas/IsValid"
+
 
 
