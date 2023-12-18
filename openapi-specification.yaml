@@ -29,7 +29,7 @@ paths:
                 - Categories
             summary: Get all categories
             description: |
-                Get all categories **without** attributes and products
+               ### Get all categories `without` attributes and products.
             responses:
                 '200':
                     description: Get all categories
@@ -52,7 +52,7 @@ paths:
                 - Categories
             summary: Get category by id
             description: |
-                Get category details by id **with**  attributes and products
+                ### Get category details by id `with`  attributes and products.
             parameters:
                 -   in: path
                     name: categoryId
@@ -96,7 +96,7 @@ paths:
                 - Products
             summary: Get product page by id
             description: |
-                Get product details by id
+                ### Get product details by id.
             parameters:
                 -   in: path
                     name: productItemId
@@ -130,8 +130,8 @@ paths:
                 - Products
             summary: Get bestsellers
             description: |
-                Bestsellers, products with highest reviewsAmount 
-                in combination with average rating, sorted in desc
+                ### Get bestsellers, products with highest amount of reviews. 
+                ### Sorted in descending order.
             parameters:
                 -   $ref: "#/components/parameters/PageNumber"
                 -   $ref: "#/components/parameters/PageSize"
@@ -152,9 +152,9 @@ paths:
                 - Products
             summary: Search products
             description: |
-                Search will process name, description, sku and
-                compare them with a searchKey.
-                If searchKey is empty or 'no-key', it will return all products.
+                ### Get product items by using `searchKey`.
+                ### Search will compare `searchKey` with name, description and sku of a product. 
+                ### If `searchKey` is empty or 'no-key' is specified, it will return all products.
             parameters:
                 -   in: query
                     name: searchKey
@@ -202,13 +202,14 @@ components:
             in: query
             name: filter
             description: |
-                ## Filter by attribute options. 
+                ## *Filter product items*. 
                 ***
-                ### Filtering is performed using *optionId*.
-                ### Options separated by ','
-                ### Attributes separated by '-'
-                ### Example: 
-                ### Color(red,green)-Size(XXL)-Weight(2.5kg) = will look like: 12,13-48-78
+                * Filtering is performed using `optionId`.
+                * Option IDs are separated by `,`
+                * Attributes are separated by `-`
+                * Example: 
+                    * Color(red,green)-Size(XXL)-Weight(2.5kg) = 12,13-48-78
+                    * Color(`12,13`)-Size(`48`)-Weight(`78`) = 12,13-48-78
             schema:
                 type: string
             examples:
@@ -344,53 +345,41 @@ components:
                             name: Кількість місць
                             options:
                                 -   id: 1
-                                    attributeId: 1
-                                    name: 2
+                                    value: 2
                                 -   id: 2
-                                    attributeId: 1
-                                    name: 3
+                                    value: 3
                                 -   id: 3
-                                    attributeId: 1
-                                    name: 4
+                                    value: 4
                         -   id: 2
                             productCategoryId: 1
                             name: Водонепроникність
                             options:
                                 -   id: 4
-                                    attributeId: 2
-                                    name: 3000
+                                    value: 3000
                                 -   id: 5
-                                    attributeId: 2
-                                    name: 4000
+                                    value: 4000
                                 -   id: 6
-                                    attributeId: 2
-                                    name: 5000
+                                    value: 5000
                         -   id: 3
                             productCategoryId: 1
                             name: Вага
                             options:
                                 -   id: 7
-                                    attributeId: 3
-                                    name: 2.5
+                                    value: 2.5
                                 -   id: 8
-                                    attributeId: 3
-                                    name: 3.5
+                                    value: 3.5
                                 -   id: 9
-                                    attributeId: 3
-                                    name: 4.5
+                                    value: 4.5
                         -   id: 4
                             productCategoryId: 1
                             name: Кількість входів
                             options:
                                 -   id: 10
-                                    attributeId: 4
-                                    name: 1
+                                    value: 1
                                 -   id: 11
-                                    attributeId: 4
-                                    name: 2
+                                    value: 2
                                 -   id: 12
-                                    attributeId: 4
-                                    name: 3
+                                    value: 3
                     _links:
                         self:
                             href: https://travel-items-api.pp.ua/v1/product-categories/1
@@ -455,18 +444,22 @@ components:
                             quantityInStock: 20
                             price: 8492
                     config:
-                        -   id: 11
-                            attribute: 2
-                            name: "Кількість місць: 2"
-                        -   id: 4
-                            attribute: 18
-                            name: "Водонепроникність: 3000"
-                        -   id: 28
-                            attribute: 30
-                            name: "Вага: 2.5"
-                        -   id: 1
-                            attribute: 2
-                            name: "Кількість входів: 1"
+                        -   attributeId: 2
+                            attribute: Кількість місць
+                            optionId: 11
+                            option: 2
+                        -   attributeId: 3
+                            attribute: Водонепроникність
+                            optionId: 5
+                            option: 4000
+                        -   attributeId: 4
+                            attribute: Вага
+                            optionId: 8
+                            option: 3.5
+                        -   attributeId: 5
+                            attribute: Кількість входів
+                            optionId: 12
+                            option: 3
                     itemPhotos:
                         -   id: 127
                             photo: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-001.jpg
@@ -914,21 +907,19 @@ components:
                 options:
                     type: array
                     items:
-                        $ref: "#/components/schemas/Option"
+                        $ref: "#/components/schemas/OptionDTOForAttribute"
                     default: []
                 _links:
                     $ref: "#/components/schemas/Links"
 
-        Option:
+        OptionDTOForAttribute:
             type: object
             description: Product option
             readOnly: true
             properties:
                 id:
                     type: integer
-                attributeId:
-                    type: integer
-                name:
+                value:
                     type: string
 
 
@@ -966,7 +957,7 @@ components:
                     type: array
                     description: List of 'attribute-option' pairs
                     items:
-                        $ref: "#/components/schemas/AttributeOption"
+                        $ref: "#/components/schemas/OptionDTOForProduct"
                     default: []
                 itemPhotos:
                     type: array
@@ -989,17 +980,19 @@ components:
                         $ref: "#/components/schemas/Question"
                     default: []
 
-        AttributeOption:
+        OptionDTOForProduct:
             type: object
             description: |
-                Concatenation of attribute and option like: "AttributeName: OptionValue"
+                Config object that contains attribute and option of particular product item
             readOnly: true
             properties:
-                id:
+                attributeId:
                     type: integer
                 attribute:
+                    type: string
+                optionId:
                     type: integer
-                name:
+                option:
                     type: string
 
         Review:
