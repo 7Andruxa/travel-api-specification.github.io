@@ -6,8 +6,9 @@ info:
         ## Goal
         ### This Travel Items Shop API Documentation was created to give you guidelines how it works under the hood and how you can easily interact with it.
         ## Shop URLs:
-        ###     [Front-End](https://travel-items.pp.ua)
-        ###     [Back-End](https://travel-items-api.pp.ua)
+        * ### [Front-End](https://travel-items.pp.ua)
+        * ### [Back-End](https://travel-items-api.pp.ua)
+        ![Imgur](https://i.imgur.com/eadEVj0.png)
     version: V1.0.0
 
 servers:
@@ -29,7 +30,8 @@ paths:
                 - Categories
             summary: Get all categories
             description: |
-               ### Get all categories `without` attributes and products.
+                ### Get all categories `without` attributes and products.
+                ![Imgur](https://i.imgur.com/Bumwdn2.png)
             responses:
                 '200':
                     description: Get all categories
@@ -52,7 +54,8 @@ paths:
                 - Categories
             summary: Get category by id
             description: |
-                ### Get category details by id `with`  attributes and products.
+                ### Get category details `with` attributes and products by `categoryId`.
+                ![Imgur](https://i.imgur.com/Bumwdn2.png)
             parameters:
                 -   in: path
                     name: categoryId
@@ -96,7 +99,7 @@ paths:
                 - Products
             summary: Get product page by id
             description: |
-                ### Get product details by id.
+                ### Get product details by `productItemId`.
             parameters:
                 -   in: path
                     name: productItemId
