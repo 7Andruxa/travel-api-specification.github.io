@@ -276,7 +276,7 @@ components:
                 ## *Filter product items by price range*. 
                 ***
                 * Filtering is performed using `price`.
-                * Price range is separated by "-".
+                * Price range is separated by `-`.
                 * Example: 
                     * Price range from 1000 to 2000 = 1000-2000.
                 * Default: 0-1000000.
