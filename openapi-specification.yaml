@@ -54,6 +54,12 @@ paths:
             summary: Get category by id
             description: |
                 ### *Get category details `with` attributes and products by `categoryId`.*
+                ***
+                ### *Note for categories with `subCategories`:*
+                * ### *Fields that are not present:*
+                        * `categoryAttributes`
+                        * `itemAttributes`
+                * ### *Filtering by `optionId` is disabled. Only by `price`.*
                 ![Imgur](https://i.imgur.com/Bumwdn2.png)
             parameters:
                 -   in: path
@@ -208,6 +214,7 @@ components:
             name: filter
             description: |
                 ## *Filter product items by attribute options*. 
+                ## *Works only for categories `without` subCategories.*
                 ***
                 * Filtering is performed using `optionId`.
                 * Option IDs are separated by `,`.
