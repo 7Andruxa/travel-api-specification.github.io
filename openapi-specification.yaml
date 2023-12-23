@@ -30,7 +30,7 @@ paths:
                 - Categories
             summary: Get all categories
             description: |
-                ### Get all categories `without` attributes and products.
+                ### *Get all categories `without` attributes and products.*
                 ![Imgur](https://i.imgur.com/Bumwdn2.png)
             responses:
                 '200':
@@ -46,7 +46,6 @@ paths:
                         GetCategoryDetailsById:
                             $ref: "#/components/links/GetCategoryDetailsById"
 
-
     /product-categories/{categoryId}:
         get:
             operationId: getCategoryDetails
@@ -54,7 +53,7 @@ paths:
                 - Categories
             summary: Get category by id
             description: |
-                ### Get category details `with` attributes and products by `categoryId`.
+                ### *Get category details `with` attributes and products by `categoryId`.*
                 ![Imgur](https://i.imgur.com/Bumwdn2.png)
             parameters:
                 -   in: path
@@ -68,6 +67,7 @@ paths:
                 -   $ref: "#/components/parameters/SortProperty"
                 -   $ref: "#/components/parameters/SortDirection"
                 -   $ref: "#/components/parameters/Filter"
+                -   $ref: "#/components/parameters/PriceRange"
             responses:
                 '200':
                     description: Get category by id
@@ -92,6 +92,37 @@ paths:
                                     $ref: "#/components/examples/CategoryNotFoundException"
 
 
+    /products:
+        get:
+            tags:
+                - Products
+            summary: Get all product items
+            description: |
+                ### *Get specific product items by using `searchKey`.*
+                ### *Search will compare `searchKey` with name, description and sku of a product.* 
+                ### *If `searchKey` is empty or 'no-key' is specified, it will return all products.*
+            parameters:
+                -   in: query
+                    name: searchKey
+                    schema:
+                        type: string
+                        default: no-key
+                -   $ref: "#/components/parameters/PageNumber"
+                -   $ref: "#/components/parameters/PageSize"
+                -   $ref: "#/components/parameters/SortProperty"
+                -   $ref: "#/components/parameters/SortDirection"
+                -   $ref: "#/components/parameters/PriceRange"
+            responses:
+                '200':
+                    description: Search result page example
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ProductItemsPage"
+                            examples:
+                                productItemsPageExample:
+                                    $ref: "#/components/examples/SearchResultPageExample"
+
     /products/{productItemId}:
         get:
             operationId: getProductPage
@@ -99,7 +130,7 @@ paths:
                 - Products
             summary: Get product page by id
             description: |
-                ### Get product details by `productItemId`.
+                ### *Get product details by `productItemId`.*
             parameters:
                 -   in: path
                     name: productItemId
@@ -133,8 +164,8 @@ paths:
                 - Products
             summary: Get bestsellers
             description: |
-                ### Get bestsellers, products with highest amount of reviews. 
-                ### Sorted in descending order.
+                ### *Get bestsellers, products with highest amount of reviews.* 
+                ### *Sorted in descending order.*
             parameters:
                 -   $ref: "#/components/parameters/PageNumber"
                 -   $ref: "#/components/parameters/PageSize"
@@ -149,36 +180,6 @@ paths:
                                 productItemsPageExample:
                                     $ref: "#/components/examples/BestsellersPage"
 
-    /products/search:
-        get:
-            tags:
-                - Products
-            summary: Search products
-            description: |
-                ### Get product items by using `searchKey`.
-                ### Search will compare `searchKey` with name, description and sku of a product. 
-                ### If `searchKey` is empty or 'no-key' is specified, it will return all products.
-            parameters:
-                -   in: query
-                    name: searchKey
-                    schema:
-                        type: string
-                        default: no-key
-                -   $ref: "#/components/parameters/PageNumber"
-                -   $ref: "#/components/parameters/PageSize"
-                -   $ref: "#/components/parameters/SortProperty"
-                -   $ref: "#/components/parameters/SortDirection"
-            responses:
-                '200':
-                    description: Search result page example
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ProductItemsPage"
-                            examples:
-                                productItemsPageExample:
-                                    $ref: "#/components/examples/SearchResultPageExample"
-
 
 
 
@@ -191,6 +192,7 @@ components:
                 * Use endpoint `GET /product-categories/{categoryId}` for this
             parameters:
                 categoryId: $response.body._embedded.categoryDTOList.[*]#/id
+
         GetProductItemPageById:
             operationId: getProductPage
             description: |
@@ -205,14 +207,15 @@ components:
             in: query
             name: filter
             description: |
-                ## *Filter product items*. 
+                ## *Filter product items by attribute options*. 
                 ***
                 * Filtering is performed using `optionId`.
-                * Option IDs are separated by `,`
-                * Attributes are separated by `-`
+                * Option IDs are separated by `,`.
+                * Attributes are separated by `-`.
                 * Example: 
-                    * Color(red,green)-Size(XXL)-Weight(2.5kg) = 12,13-48-78
-                    * Color(`12,13`)-Size(`48`)-Weight(`78`) = 12,13-48-78
+                    * Color(red,green)-Size(XXL)-Weight(2.5kg) = 12,13-48-78.
+                    * Color(`12,13`)-Size(`48`)-Weight(`78`) = 12,13-48-78.
+                * Default: no-filter.
             schema:
                 type: string
             examples:
@@ -266,6 +269,29 @@ components:
                 maximum: 500
                 default: 32
 
+        PriceRange:
+            in: query
+            name: priceRange
+            description: |
+                ## *Filter product items by price range*. 
+                ***
+                * Filtering is performed using `price`.
+                * Price range is separated by "-".
+                * Example: 
+                    * Price range from 1000 to 2000 = 1000-2000.
+                * Default: 0-1000000.
+            schema:
+                type: string
+            examples:
+                price-range-filter-1:
+                    summary: Filter by price range №1
+                    description: Get product items in price range from 1000 to 2000
+                    value: 1000-2000
+                price-range-filter-2:
+                    summary: Filter by price range №2
+                    description: Get product items in price range from 0 to 8500
+                    value: 0-2000
+
 
     examples:
         CollectionModelOfCategories:
@@ -309,40 +335,7 @@ components:
                     name: Намети
                     image: намети.png
                     subCategories: []
-                    productItemsPage:
-                        page: 1
-                        size: 32
-                        totalElements: 154
-                        totalPages: 5
-                        content:
-                            -   id: 901
-                                mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-025-Peak-2-v2-green-001.jpg
-                                name: Намет Tramp UTRT-025 Peak 2 V2 (Green)
-                                quantityInStock: 10
-                                price: 7742
-                                variations:
-                                    -   id: 895
-                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/84/palatka-Tramp-Peak-2-TRT-23-new-00.jpg
-                                        name: Намет Tramp TRT-025 Peak 2 V2 (Grey/Red)
-                                        quantityInStock: 33
-                                        price: 6192
-                                    -   id: 901
-                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-025-Peak-2-v2-green-001.jpg
-                                        name: Намет Tramp UTRT-025 Peak 2 V2 (Green)
-                                        quantityInStock: 10
-                                        price: 7742
-                                    -   id: 907
-                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/78/palatka-Tramp-TRT-026-Peak-3-v2-00.jpg
-                                        name: Намет Tramp TRT-026 Peak 3 V2 (Grey/Red)
-                                        quantityInStock: 32
-                                        price: 6793
-                                    -   id: 909
-                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-026-Peak-3-v2-green-001.jpg
-                                        name: Намет Tramp UTRT-026 Peak 3 V2 (Green)
-                                        quantityInStock: 20
-                                        price: 8492
-                        lastPage: false
-                    attributes:
+                    categoryAttributes:
                         -   id: 1
                             productCategoryId: 1
                             name: Кількість місць
@@ -383,10 +376,126 @@ components:
                                     value: 2
                                 -   id: 12
                                     value: 3
+                    itemAttributes:
+                        -   id: 1
+                            productCategoryId: 1
+                            name: Кількість місць
+                            options:
+                                -   id: 2
+                                    value: 3
+                                -   id: 3
+                                    value: 4
+                        -   id: 2
+                            productCategoryId: 1
+                            name: Водонепроникність
+                            options:
+                                -   id: 4
+                                    value: 3000
+                                -   id: 5
+                                    value: 4000
+                                -   id: 6
+                                    value: 5000
+                        -   id: 3
+                            productCategoryId: 1
+                            name: Вага
+                            options:
+                                -   id: 9
+                                    value: 4.5
+                        -   id: 4
+                            productCategoryId: 1
+                            name: Кількість входів
+                            options:
+                                -   id: 10
+                                    value: 1
+                                -   id: 12
+                                    value: 3
+                    maxItemPrice: 8492
+                    minItemPrice: 4838
+                    productItemsPage:
+                        page: 1
+                        size: 32
+                        totalElements: 154
+                        totalPages: 5
+                        content:
+                            -   id: 901
+                                mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-025-Peak-2-v2-green-001.jpg
+                                name: Намет Tramp UTRT-025 Peak 2 V2 (Green)
+                                brand: Tramp
+                                quantityInStock: 10
+                                price: 7742
+                                variations:
+                                    -   id: 895
+                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/84/palatka-Tramp-Peak-2-TRT-23-new-00.jpg
+                                        name: Намет Tramp TRT-025 Peak 2 V2 (Grey/Red)
+                                        brand: Tramp
+                                        quantityInStock: 33
+                                        price: 6192
+                                        _links:
+                                            self:
+                                                href: http://localhost:5000/v1/products/895
+                                                title: Get product item page
+                                    -   id: 901
+                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-025-Peak-2-v2-green-001.jpg
+                                        name: Намет Tramp UTRT-025 Peak 2 V2 (Green)
+                                        brand: Tramp
+                                        quantityInStock: 10
+                                        price: 7742
+                                        _links:
+                                            self:
+                                                href: http://localhost:5000/v1/products/901
+                                                title: Get product item page
+                                    -   id: 907
+                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/78/palatka-Tramp-TRT-026-Peak-3-v2-00.jpg
+                                        name: Намет Tramp TRT-026 Peak 3 V2 (Grey/Red)
+                                        brand: Tramp
+                                        quantityInStock: 32
+                                        price: 6793
+                                        _links:
+                                            self:
+                                                href: http://localhost:5000/v1/products/907
+                                                title: Get product item page
+                                    -   id: 909
+                                        mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-026-Peak-3-v2-green-001.jpg
+                                        name: Намет Tramp UTRT-026 Peak 3 V2 (Green)
+                                        brand: Tramp
+                                        quantityInStock: 20
+                                        price: 8492
+                                        _links:
+                                            self:
+                                                href: http://localhost:5000/v1/products/909
+                                                title: Get product item page
+                                config:
+                                    -   attributeId: 2
+                                        attribute: Кількість місць
+                                        optionId: 11
+                                        option: 2
+                                    -   attributeId: 3
+                                        attribute: Водонепроникність
+                                        optionId: 5
+                                        option: 4000
+                                    -   attributeId: 4
+                                        attribute: Вага
+                                        optionId: 8
+                                        option: 3.5
+                                    -   attributeId: 5
+                                        attribute: Кількість входів
+                                        optionId: 12
+                                        option: 3
+                                _links:
+                                    self:
+                                        href: http://localhost:5000/v1/products/901
+                                        title: Get product item page
+                                    addToCart:
+                                        href: http://localhost:5000/v1/cart/add/901
+                                        title: Add product item to the cart
+                                    removeFromCart:
+                                        href: http://localhost:5000/v1/cart/remove/901
+                                        title: Remove product item from the cart
+                        lastPage: false
                     _links:
-                        self:
-                            href: https://travel-items-api.pp.ua/v1/product-categories/1
-                            title: Get this product category
+                        getAllCategories:
+                            href: https://travel-items-api.pp.ua/v1/product-categories
+                            title: Get all categories
 
         CategoryNotFoundException:
             summary: Category not found exception example
@@ -398,7 +507,6 @@ components:
                     detail: Category with id 1 not found
                     instance: https://travel-items-api.pp.ua/v1/product-categories/1
 
-
         ProductItemDTOForPage:
             summary: Product item DTO example
             value:
@@ -406,6 +514,8 @@ components:
                     id: 901
                     categoryId: 1
                     sku: 9511
+                    name: Намет Tramp TRT-056 Scout 3 V2 (Green)
+                    brand: Tramp
                     description: |
                         Намет Tramp TRT-056 Scout 3 V2 — універсальний 3-місний намет для туристичних походів. 
                         Класична форма. Просте та швидке встановлення. Найпопулярніша модель намету для походів.\n
@@ -429,21 +539,25 @@ components:
                         -   id: 895
                             mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/84/palatka-Tramp-Peak-2-TRT-23-new-00.jpg
                             name: Намет Tramp TRT-025 Peak 2 V2 (Grey/Red)
+                            brand: Tramp
                             quantityInStock: 33
                             price: 6192
                         -   id: 901
                             mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-025-Peak-2-v2-green-001.jpg
                             name: Намет Tramp UTRT-025 Peak 2 V2 (Green)
+                            brand: Tramp
                             quantityInStock: 10
                             price: 7742
                         -   id: 907
                             mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/78/palatka-Tramp-TRT-026-Peak-3-v2-00.jpg
                             name: Намет Tramp TRT-026 Peak 3 V2 (Grey/Red)
+                            brand: Tramp
                             quantityInStock: 32
                             price: 6793
                         -   id: 909
                             mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/82/palatka-Tramp-TRT-026-Peak-3-v2-green-001.jpg
                             name: Намет Tramp UTRT-026 Peak 3 V2 (Green)
+                            brand: Tramp
                             quantityInStock: 20
                             price: 8492
                     config:
@@ -516,6 +630,19 @@ components:
                             createdDate: 01 січня 2021
                             isValid: false
                             answers: []
+                    _links:
+                        self:
+                            href: http://localhost:5000/v1/products/901
+                            title: Get product item page
+                        addToCart:
+                            href: http://localhost:5000/v1/cart/add/901
+                            title: Add product item to the cart
+                        removeFromCart:
+                            href: http://localhost:5000/v1/cart/remove/901
+                            title: Remove product item from the cart
+                        getCategory:
+                            href: http://localhost:5000/v1/product-categories/1
+                            title: Get category of the product item
 
         ProductItemNotFoundException:
             summary: Product item not found exception example
@@ -540,92 +667,225 @@ components:
                         -   id: 1027
                             mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001.jpg
                             name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                            brand: Terra Incognita
                             quantityInStock: 7
                             price: 2497
                             variations:
                                 -   id: 1025
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    brand: Terra Incognita
                                     quantityInStock: 16
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1025
+                                            title: Get product item page
                                 -   id: 1026
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001_knx0-91.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    brand: Terra Incognita
                                     quantityInStock: 20
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1026
+                                            title: Get product item page
                                 -   id: 1027
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    brand: Terra Incognita
                                     quantityInStock: 7
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1027
+                                            title: Get product item page
                                 -   id: 1028
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001_iemp-5p.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    brand: Terra Incognita
                                     quantityInStock: 12
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1028
+                                            title: Get product item page
+                            config:
+                                -   attributeId: 2
+                                    attribute: Кількість місць
+                                    optionId: 11
+                                    option: 2
+                                -   attributeId: 3
+                                    attribute: Водонепроникність
+                                    optionId: 5
+                                    option: 4000
+                                -   attributeId: 4
+                                    attribute: Вага
+                                    optionId: 8
+                                    option: 3.5
+                                -   attributeId: 5
+                                    attribute: Кількість входів
+                                    optionId: 12
+                                    option: 3
+                            _links:
+                                self:
+                                    href: http://localhost:5000/v1/products/1027
+                                    title: Get product item page
+                                addToCart:
+                                    href: http://localhost:5000/v1/cart/add/1027
+                                    title: Add product item to the cart
+                                removeFromCart:
+                                    href: http://localhost:5000/v1/cart/remove/1027
+                                    title: Remove product item from the cart
                         -   id: 1028
                             mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001_iemp-5p.jpg
                             name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                            brand: Terra Incognita
                             quantityInStock: 12
                             price: 2497
                             variations:
                                 -   id: 1025
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    brand: Terra Incognita
                                     quantityInStock: 16
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1025
+                                            title: Get product item page
                                 -   id: 1026
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001_knx0-91.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    brand: Terra Incognita
                                     quantityInStock: 20
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1026
+                                            title: Get product item page
                                 -   id: 1027
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    brand: Terra Incognita
                                     quantityInStock: 7
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1027
+                                            title: Get product item page
                                 -   id: 1028
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001_iemp-5p.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    brand: Terra Incognita
                                     quantityInStock: 12
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1028
+                                            title: Get product item page
+                            config:
+                                -   attributeId: 2
+                                    attribute: Кількість місць
+                                    optionId: 11
+                                    option: 2
+                                -   attributeId: 3
+                                    attribute: Водонепроникність
+                                    optionId: 5
+                                    option: 4000
+                                -   attributeId: 4
+                                    attribute: Вага
+                                    optionId: 8
+                                    option: 3.5
+                                -   attributeId: 5
+                                    attribute: Кількість входів
+                                    optionId: 12
+                                    option: 3
+                            _links:
+                                self:
+                                    href: http://localhost:5000/v1/products/1028
+                                    title: Get product item page
+                                addToCart:
+                                    href: http://localhost:5000/v1/cart/add/1028
+                                    title: Add product item to the cart
+                                removeFromCart:
+                                    href: http://localhost:5000/v1/cart/remove/1028
+                                    title: Remove product item from the cart
                         -   id: 1026
                             mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001_knx0-91.jpg
                             name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                            brand: Terra Incognita
                             quantityInStock: 20
                             price: 2497
                             variations:
                                 -   id: 1025
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    brand: Terra Incognita
                                     quantityInStock: 16
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1025
+                                            title: Get product item page
                                 -   id: 1026
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-blue-001_knx0-91.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Navy Blue)
+                                    brand: Terra Incognita
                                     quantityInStock: 20
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1026
+                                            title: Get product item page
                                 -   id: 1027
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    brand: Terra Incognita
                                     quantityInStock: 7
                                     price: 2497
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1027
+                                            title: Get product item page
                                 -   id: 1028
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1738/1053/detailed/83/Asleep-Wide-200-Green-001_iemp-5p.jpg
                                     name: Спальник Terra Incognita Asleep 200 Wide (Green)
+                                    brand: Terra Incognita
                                     quantityInStock: 12
                                     price: 2497
-                        -   id: 901
-                            mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1114/675/detailed/78/palatka-pinguin-serac-01.jpg
-                            name: Намет Pinguin Serac (Green)
-                            quantityInStock: 48
-                            price: 5928
-                            variations:
-                                -   id: 901
-                                    mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1114/675/detailed/78/palatka-pinguin-serac-01.jpg
-                                    name: Намет Pinguin Serac (Green)
-                                    quantityInStock: 48
-                                    price: 5928
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/1028
+                                            title: Get product item page
+                            config:
+                                -   attributeId: 2
+                                    attribute: Кількість місць
+                                    optionId: 11
+                                    option: 2
+                                -   attributeId: 3
+                                    attribute: Водонепроникність
+                                    optionId: 5
+                                    option: 4000
+                                -   attributeId: 4
+                                    attribute: Вага
+                                    optionId: 8
+                                    option: 3.5
+                                -   attributeId: 5
+                                    attribute: Кількість входів
+                                    optionId: 12
+                                    option: 3
+                            _links:
+                                self:
+                                    href: http://localhost:5000/v1/products/1026
+                                    title: Get product item page
+                                addToCart:
+                                    href: http://localhost:5000/v1/cart/add/1026
+                                    title: Add product item to the cart
+                                removeFromCart:
+                                    href: http://localhost:5000/v1/cart/remove/1026
+                                    title: Remove product item from the cart
 
         SearchResultPageExample:
             summary: Search result page example for key 'TRT-055 Scout 2 V2'
@@ -640,55 +900,151 @@ components:
                         -   id: 24
                             mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-055-Scout-2-V2-001.jpg
                             name: Намет Tramp TRT-055 Scout 2 V2 (Green/Yellow)
+                            brand: Tramp
                             quantityInStock: 0
                             price: 4838
                             variations:
                                 -   id: 24
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-055-Scout-2-V2-001.jpg
                                     name: Намет Tramp TRT-055 Scout 2 V2 (Green/Yellow)
+                                    brand: Tramp
                                     quantityInStock: 0
                                     price: 4838
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/24
+                                            title: Get product item page
                                 -   id: 25
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-001.jpg
                                     name: Намет Tramp TRT-056 Scout 3 V2 (Green/Yellow)
+                                    brand: Tramp
                                     quantityInStock: 10
                                     price: 5292
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/25
+                                            title: Get product item page
                                 -   id: 26
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1287/780/detailed/187/namet-Tramp-UTRT-055-Scout-2-20230630-00.jpg
                                     name: Намет Tramp UTRT-055 Scout 2 V2 (Green)
+                                    brand: Tramp
                                     quantityInStock: 20
                                     price: 4838
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/26
+                                            title: Get product item page
                                 -   id: 27
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1287/780/detailed/187/namet-Tramp-UTRT-056-Scout-3-20230630-00.jpg
                                     name: Намет Tramp UTRT-056 Scout 3 V2 (Green)
+                                    brand: Tramp
                                     quantityInStock: 15
                                     price: 5292
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/27
+                                            title: Get product item page
+                            config:
+                                -   attributeId: 2
+                                    attribute: Кількість місць
+                                    optionId: 11
+                                    option: 2
+                                -   attributeId: 3
+                                    attribute: Водонепроникність
+                                    optionId: 5
+                                    option: 4000
+                                -   attributeId: 4
+                                    attribute: Вага
+                                    optionId: 8
+                                    option: 3.5
+                                -   attributeId: 5
+                                    attribute: Кількість входів
+                                    optionId: 12
+                                    option: 3
+                            _links:
+                                self:
+                                    href: http://localhost:5000/v1/products/24
+                                    title: Get product item page
+                                addToCart:
+                                    href: http://localhost:5000/v1/cart/add/24
+                                    title: Add product item to the cart
+                                removeFromCart:
+                                    href: http://localhost:5000/v1/cart/remove/24
+                                    title: Remove product item from the cart
                         -   id: 26
                             mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1287/780/detailed/187/namet-Tramp-UTRT-055-Scout-2-20230630-00.jpg
                             name: Намет Tramp UTRT-055 Scout 2 V2 (Green)
+                            brand: Tramp
                             quantityInStock: 20
                             price: 4838
                             variations:
                                 -   id: 24
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-055-Scout-2-V2-001.jpg
                                     name: Намет Tramp TRT-055 Scout 2 V2 (Green/Yellow)
+                                    brand: Tramp
                                     quantityInStock: 0
                                     price: 4838
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/24
+                                            title: Get product item page
                                 -   id: 25
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/875/530/detailed/114/palatka-Tramp-TRT-056-Scout-3-V2-001.jpg
                                     name: Намет Tramp TRT-056 Scout 3 V2 (Green/Yellow)
+                                    brand: Tramp
                                     quantityInStock: 10
                                     price: 5292
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/25
+                                            title: Get product item page
                                 -   id: 26
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1287/780/detailed/187/namet-Tramp-UTRT-055-Scout-2-20230630-00.jpg
                                     name: Намет Tramp UTRT-055 Scout 2 V2 (Green)
+                                    brand: Tramp
                                     quantityInStock: 20
                                     price: 4838
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/26
+                                            title: Get product item page
                                 -   id: 27
                                     mainPhoto: https://palatka.com.ua/images/watermarked/1/thumbnails/1287/780/detailed/187/namet-Tramp-UTRT-056-Scout-3-20230630-00.jpg
                                     name: Намет Tramp UTRT-056 Scout 3 V2 (Green)
+                                    brand: Tramp
                                     quantityInStock: 15
                                     price: 5292
+                                    _links:
+                                        self:
+                                            href: http://localhost:5000/v1/products/27
+                                            title: Get product item page
+                            config:
+                                -   attributeId: 2
+                                    attribute: Кількість місць
+                                    optionId: 11
+                                    option: 2
+                                -   attributeId: 3
+                                    attribute: Водонепроникність
+                                    optionId: 5
+                                    option: 4000
+                                -   attributeId: 4
+                                    attribute: Вага
+                                    optionId: 8
+                                    option: 3.5
+                                -   attributeId: 5
+                                    attribute: Кількість входів
+                                    optionId: 12
+                                    option: 3
+                            _links:
+                                self:
+                                    href: http://localhost:5000/v1/products/26
+                                    title: Get product item page
+                                addToCart:
+                                    href: http://localhost:5000/v1/cart/add/26
+                                    title: Add product item to the cart
+                                removeFromCart:
+                                    href: http://localhost:5000/v1/cart/remove/26
+                                    title: Remove product item from the cart
 
 
     schemas:
@@ -721,7 +1077,6 @@ components:
                 instance:
                     type: string
                     format: url
-
 
         QuantityInStock:
             type: integer
@@ -768,7 +1123,6 @@ components:
 
 
 
-
         CollectionModelOfCategories:
             type: object
             description: Category collection wrapper for HATEOAS implementation
@@ -804,6 +1158,7 @@ components:
                 image:
                     type: string
                     format: url
+                    nullable: true
                 subCategories:
                     type: array
                     items:
@@ -830,10 +1185,17 @@ components:
                     items:
                         $ref: "#/components/schemas/Category"
                     default: []
+
+                categoryAttributes:
+                    $ref: "#/components/schemas/CategoryAttributes"
+                itemAttributes:
+                    $ref: "#/components/schemas/CategoryAttributes"
+                maxItemPrice:
+                    type: integer
+                minItemPrice:
+                    type: integer
                 productItemsPage:
                     $ref: "#/components/schemas/ProductItemsPage"
-                attributes:
-                    $ref: "#/components/schemas/CategoryAttributes"
                 _links:
                     $ref: "#/components/schemas/Links"
 
@@ -862,14 +1224,33 @@ components:
             type: object
             description: Product item DTO with only necessary fields for catalog
             readOnly: true
-            allOf:
-                -   $ref: "#/components/schemas/ProductItemDTOForVariation"
             properties:
+                id:
+                    type: integer
+                mainPhoto:
+                    type: string
+                    format: url
+                name:
+                    type: string
+                brand:
+                    type: string
+                quantityInStock:
+                    $ref: "#/components/schemas/QuantityInStock"
+                price:
+                    type: integer
                 variations:
                     type: array
                     items:
                         $ref: "#/components/schemas/ProductItemDTOForVariation"
                     default: []
+                config:
+                    type: array
+                    description: List of 'attribute-option' pairs
+                    items:
+                        $ref: "#/components/schemas/OptionDTOForProduct"
+                    default: []
+                _links:
+                    $ref: "#/components/schemas/Links"
 
         ProductItemDTOForVariation:
             type: object
@@ -883,10 +1264,20 @@ components:
                     format: url
                 name:
                     type: string
+                brand:
+                    type: string
                 quantityInStock:
                     $ref: "#/components/schemas/QuantityInStock"
                 price:
                     type: integer
+                config:
+                    type: array
+                    description: List of 'attribute-option' pairs
+                    items:
+                        $ref: "#/components/schemas/OptionDTOForProduct"
+                    default: []
+                _links:
+                    $ref: "#/components/schemas/Links"
 
         CategoryAttributes:
             type: array
@@ -939,6 +1330,8 @@ components:
                     type: string
                 name:
                     type: string
+                brand:
+                    type: string
                 description:
                     type: string
                     description: |
@@ -982,6 +1375,8 @@ components:
                     items:
                         $ref: "#/components/schemas/Question"
                     default: []
+                _links:
+                    $ref: "#/components/schemas/Links"
 
         OptionDTOForProduct:
             type: object
@@ -1070,8 +1465,6 @@ components:
                     $ref: "#/components/schemas/CreatedDate"
                 isValid:
                     $ref: "#/components/schemas/IsValid"
-
-
 
 
 
