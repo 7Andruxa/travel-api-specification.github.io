@@ -8,7 +8,7 @@ info:
         ## Shop URLs:
         * ### [Front-End](https://travel-items.pp.ua)
         * ### [Back-End](https://travel-items-api.pp.ua)
-        ![Imgur](https://i.imgur.com/eadEVj0.png)
+        ![Imgur](https://i.imgur.com/GRbBIoQ.png)
     version: V1.0.0
 
 servers:
@@ -31,7 +31,7 @@ paths:
             summary: Get all categories
             description: |
                 ### *Get all categories `without` attributes and products.*
-                ![Imgur](https://i.imgur.com/Bumwdn2.png)
+                ![Imgur](https://i.imgur.com/ursv3ze.png)
             responses:
                 '200':
                     description: Get all categories
@@ -60,7 +60,7 @@ paths:
                         * `categoryAttributes`
                         * `itemAttributes`
                 * ### *Filtering by `optionId` is disabled. Only by `price`.*
-                ![Imgur](https://i.imgur.com/Bumwdn2.png)
+                ![Imgur](https://i.imgur.com/ursv3ze.png)
             parameters:
                 -   in: path
                     name: categoryId
